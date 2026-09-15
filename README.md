@@ -124,7 +124,7 @@ Default port is **7864** so it can sit next to the Wan GUIs (7860 / 7862 / 7863)
 Windows can author this repo. The CUDA image build is Linux (`linux/amd64`). Docker Desktop or WSL both work. Do not pull H3 checkpoints onto the workstation.
 
 ```bash
-docker build --platform linux/amd64 -t brakhet/podbooth-minimax-h3:v0.1.0-i2v-cu128 .
+docker build --platform linux/amd64 -t brakhet/podbooth-minimax-h3:v0.1.1-i2v-cu128 .
 ```
 
 Do not add `wget` lines for H3 checkpoints.

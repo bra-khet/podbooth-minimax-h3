@@ -11,7 +11,9 @@ import binascii
 import json
 import logging
 import os
+import shutil
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import uuid
@@ -40,22 +42,33 @@ logger = logging.getLogger(__name__)
 server_address = os.getenv("SERVER_ADDRESS", "127.0.0.1")
 client_id = str(uuid.uuid4())
 WORKFLOW_I2V = os.getenv("H3_I2V_WORKFLOW", "/workflows/h3_i2v_api.json")
+# BUG FIX: LoadImage combo 400
+# Fix: LoadImage.image is a combo of files in Comfy's input folder. An absolute
+# /runpod-volume path is rejected by POST /prompt with HTTP 400.
+COMFY_INPUT_DIR = os.getenv("COMFY_INPUT_DIR", "/ComfyUI/input")
 VIDEO_EXTS = (".mp4", ".webm", ".mkv", ".mov")
 
 
 def process_input(input_data: str, temp_dir: str, output_filename: str, input_type: str) -> str:
-    """Resolve path / url / base64 to a local file path."""
+    """Resolve path / url / base64 to a LoadImage basename inside Comfy's input folder."""
+    os.makedirs(COMFY_INPUT_DIR, exist_ok=True)
+    dest_name = f"{uuid.uuid4().hex}_{os.path.basename(output_filename)}"
+    dest_path = os.path.join(COMFY_INPUT_DIR, dest_name)
     if input_type == "path":
         logger.info("Path input: %s", input_data)
-        return input_data
+        if not os.path.isfile(input_data):
+            raise Exception(f"Input file not found: {input_data}")
+        shutil.copy2(input_data, dest_path)
+        logger.info("Staged %s -> %s", input_data, dest_path)
+        return dest_name
     if input_type == "url":
         logger.info("URL input: %s", input_data)
-        os.makedirs(temp_dir, exist_ok=True)
-        file_path = os.path.abspath(os.path.join(temp_dir, output_filename))
-        return download_file_from_url(input_data, file_path)
+        download_file_from_url(input_data, dest_path)
+        return dest_name
     if input_type == "base64":
         logger.info("Base64 input")
-        return save_base64_to_file(input_data, temp_dir, output_filename)
+        save_base64_to_file(input_data, COMFY_INPUT_DIR, dest_name)
+        return dest_name
     raise Exception(f"Unsupported input type: {input_type}")
 
 
@@ -102,7 +115,14 @@ def queue_prompt(prompt: dict[str, Any]) -> dict[str, Any]:
     logger.info("Queueing prompt to %s", url)
     payload = json.dumps({"prompt": prompt, "client_id": client_id}).encode("utf-8")
     req = urllib.request.Request(url, data=payload)
-    return json.loads(urllib.request.urlopen(req).read())
+    try:
+        return json.loads(urllib.request.urlopen(req).read())
+    except urllib.error.HTTPError as exc:
+        # BUG FIX: Comfy /prompt 400 was opaque
+        # Fix: include the response body so combo/schema errors are diagnosable
+        body = exc.read().decode("utf-8", errors="replace")
+        logger.error("Comfy /prompt HTTP %s: %s", exc.code, body)
+        raise Exception(f"Comfy /prompt HTTP {exc.code}: {body}") from exc
 
 
 def get_history(prompt_id: str) -> dict[str, Any]:

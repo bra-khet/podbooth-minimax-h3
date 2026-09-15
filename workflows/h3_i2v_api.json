@@ -64,8 +64,7 @@
   },
   "15": {
     "inputs": {
-      "noise_seed": 42,
-      "control_after_generate": "fixed"
+      "noise_seed": 42
     },
     "class_type": "RandomNoise",
     "_meta": {
@@ -152,8 +151,8 @@
     "inputs": {
       "video": ["91", 0],
       "filename_prefix": "video/PodBooth_H3",
-      "format": "mp4",
-      "codec": "h264"
+      "format": "auto",
+      "codec": "auto"
     },
     "class_type": "SaveVideo",
     "_meta": {

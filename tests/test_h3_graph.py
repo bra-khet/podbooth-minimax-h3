@@ -41,6 +41,11 @@ def test_workflow_is_native_h3_not_wan():
     assert "SaveVideo" in class_types
     assert not any(name.startswith("Wan") for name in class_types)
     assert "WanVideoModelLoader" not in class_types
+    noise = WORKFLOW[find_one(WORKFLOW, "RandomNoise")]["inputs"]
+    assert "control_after_generate" not in noise
+    save = WORKFLOW[find_one(WORKFLOW, "SaveVideo")]["inputs"]
+    assert save["format"] == "auto"
+    assert save["codec"] == "auto"
 
 
 def test_find_nodes_by_class_and_title():
