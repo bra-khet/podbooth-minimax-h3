@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Local Gradio control panel for the PodBooth MiniMax H3 worker.
+"""Thin sidecar panel for the PodBooth MiniMax H3 worker.
 
-Client-side only. Does not run inside the GPU worker.
-v1: I2V / first–last tab. Ref2Vid is deferred.
+The daily-driver booth lives in the parent repo: `h3_fl2va_gui.py` via `.\run-fl2va.ps1`
+on port **7864**. This file stays as a worker-repo convenience and defaults to 7865
+so it cannot collide with the parent GUI.
 """
 
 from __future__ import annotations
@@ -188,7 +189,7 @@ def build_app() -> gr.Blocks:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="PodBooth MiniMax H3 local UI")
     parser.add_argument("--server-name", default="0.0.0.0")
-    parser.add_argument("--server-port", type=int, default=7864)
+    parser.add_argument("--server-port", type=int, default=7865)
     parser.add_argument("--share", action="store_true")
     return parser.parse_args()
 

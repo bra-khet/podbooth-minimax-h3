@@ -8,8 +8,10 @@ Architecture is a clone of [bra-khet/podbooth-wan](https://github.com/bra-khet/p
 
 ```
 local machine
-  booth_ui.py  ──►  generate_video_client.py  ──►  RunPod /v2/{id}/run
-                                                      │
+  parent h3_fl2va_gui.py (run-fl2va.ps1 :7864)
+    ──►  RunPod /v2/{id}/run
+sidecar booth_ui.py is a convenience panel on :7865, not the daily driver.
+
 RunPod Serverless worker (GPU)
   entrypoint.sh  →  ComfyUI :8188  +  handler.py
   handler loads workflows/h3_i2v_api.json
