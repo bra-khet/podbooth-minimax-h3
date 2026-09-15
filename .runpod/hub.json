@@ -1,6 +1,6 @@
 {
   "title": "PodBooth MiniMax H3",
-  "description": "RunPod Serverless worker for MiniMax Hailuo H3 image-to-video (FL2VA). First frame required, optional last frame, native stereo audio. Weights live on a network volume — this image does not bake checkpoints.",
+  "description": "RunPod Serverless worker for MiniMax Hailuo H3 image-to-video (FL2VA). First frame required, optional last frame, native stereo audio. Weights live on a network volume — this image does not bake checkpoints. Pin the endpoint to AP-JP-1.",
   "type": "serverless",
   "category": "video",
   "iconUrl": "",
@@ -9,11 +9,9 @@
     "runsOn": "GPU",
     "containerDiskInGb": 60,
     "gpuCount": 1,
-    "gpuIds": "ADA_48,ADA_32_PRO,ADA_24",
+    "gpuIds": "ADA_80_PRO",
     "allowedCudaVersions": [
-      "12.8",
-      "13.0",
-      "13.1"
+      "12.8"
     ]
   }
 }

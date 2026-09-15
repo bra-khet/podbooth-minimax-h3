@@ -3,15 +3,21 @@
 # Starts ComfyUI, waits until :8188 answers, then execs the RunPod handler.
 set -euo pipefail
 
-PYTHON="${COMFY_PYTHON:-/opt/comfyui-env/bin/python}"
-if [ ! -x "$PYTHON" ]; then
+PYTHON="${COMFY_PYTHON:-python3}"
+if ! command -v "${PYTHON}" >/dev/null 2>&1; then
     PYTHON="python"
 fi
 
 COMFY_DIR="${COMFY_DIR:-/ComfyUI}"
-# CHANGED: Sage attention is env-gated instead of hard-coded.
-# WHY: The cu13-mmh3 base image has Sage; a future base might not. Empty COMFY_EXTRA_ARGS disables it.
-COMFY_EXTRA_ARGS="${COMFY_EXTRA_ARGS---use-sage-attention --disable-auto-launch}"
+# CHANGED: Sage is detected at boot instead of hard-coded from the old huchukato image.
+# WHY: This CUDA 12.8 base installs sageattention if a wheel exists; otherwise Comfy uses default attention.
+if [ -z "${COMFY_EXTRA_ARGS+x}" ]; then
+    if "${PYTHON}" -c "import sageattention" >/dev/null 2>&1; then
+        COMFY_EXTRA_ARGS="--use-sage-attention --disable-auto-launch"
+    else
+        COMFY_EXTRA_ARGS="--disable-auto-launch"
+    fi
+fi
 COMFY_WAIT_SECONDS="${COMFY_WAIT_SECONDS:-300}"
 
 echo "Starting ComfyUI from ${COMFY_DIR} with: ${PYTHON} main.py --listen ${COMFY_EXTRA_ARGS}"

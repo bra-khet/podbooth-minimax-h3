@@ -35,9 +35,12 @@ H3 native output is typically **768p, 24 fps, 5 / 10 / 15 seconds, stereo audio*
 
 H3 is not Wan-sized. A baked checkpoint image is hundreds of GB and makes serverless deploys miserable. The Docker image only contains:
 
-- CUDA 13 + ComfyUI ≥ 0.30 (this repo starts `FROM huchukato/comfyui-qwenvl-runpod:cu13-mmh3`, which already has Comfy 0.34.x and Sage Attention)
+- CUDA **12.8** + PyTorch (`runpod/pytorch:1.2.0-cu1281-torch280-ubuntu2404`) + ComfyUI **v0.35.2** (native `MiniMaxH3ImageToVideo`)
+- ffmpeg, ComfyUI-Manager
 - `runpod`, `websocket-client`, `requests`
 - `handler.py`, `entrypoint.sh`, `workflows/h3_i2v_api.json`, `extra_model_paths.yaml`
+
+`huchukato/comfyui-qwenvl-runpod:cu13-mmh3` is a **reference** for a working H3 Comfy box, not the base image. Jupyter, FileBrowser, auto-download, and QwenVL prompt-enhancer stay out.
 
 Exact filenames and on-volume paths: [`docs/NETWORK_VOLUME.md`](docs/NETWORK_VOLUME.md).
 
@@ -52,23 +55,23 @@ v1 I2V stack (Comfy-Org pruned INT8 ConvRot) is **~40 GB** on the volume:
 
 FL2VA and Ref2VA are **not interchangeable**. Do not point this graph at a `ref2va_*` file.
 
-## Attach the existing network volume
+## Network volume (Japan only)
 
-1. In the RunPod console, open the serverless endpoint → Storage.
-2. Attach the **same** network volume the Wan booth already uses (or a new one in a **legal** datacenter — see license below).
-3. Serverless mounts it at `/runpod-volume`. Download the four I2V files there, not into the container disk.
-4. Keep `/runpod-volume/loras/` as the Wan booth already uses it. H3 LoRAs can live there too.
+v1 is pinned to **AP-JP-1**. Do not attach an EU / US / UK / KR volume. Serverless mounts the volume at `/runpod-volume`. Download the four I2V files there with `scripts/provision-volume.sh` **on a pod in AP-JP-1** — never onto the laptop.
+
+H3 LoRAs, if any, go in `/runpod-volume/loras/` (same convention as the Wan booth, different volume).
 
 ## Suggested endpoint settings (testing)
 
 | Setting | Value |
 |---|---|
-| GPU | 48 GB+ (`ADA_48`, L40S, 6000 Ada). 24 GB can run pruned INT8 I2V at ~0.9 MP; do not treat it as the 15 s 768p target |
+| Datacenter | **AP-JP-1 only** |
+| GPU | H100 SXM (`NVIDIA H100 80GB HBM3`, pool `ADA_80_PRO`). H200 SXM is allowed as a fallback; H100 PCIe/NVL is allowed if it appears in this DC. One card. |
+| CUDA | **12.8** |
 | Workers | min **0** / max **1** while testing |
 | Execution timeout | **1200–1800 s** |
-| Flashboot | optional; a warm volume helps more than flashboot |
-| Container disk | **40–80 GB** (hub.json uses 60). Weights are on the volume |
-| CUDA | 12.8 / 13.x to match `cu13-mmh3` |
+| Flashboot | off while testing |
+| Container disk | **60 GB**. Weights are on the volume |
 
 Client wait default is 2700 s.
 
@@ -118,15 +121,10 @@ Default port is **7864** so it can sit next to the Wan GUIs (7860 / 7862 / 7863)
 
 ## Build notes (do this on a machine with disk, or on RunPod)
 
-The base image is ~9.5 GB compressed. **Do not pull it onto a disk-constrained workstation unless you have ~30 GB free** for the uncompressed layers.
-
-Windows can author this repo. A CUDA image build is Linux (`linux/amd64`). Options:
-
-1. Docker Desktop on Windows / WSL Ubuntu (this machine already has both)
-2. Build on a cheap RunPod CPU/GPU pod and push to Docker Hub
+Windows can author this repo. The CUDA image build is Linux (`linux/amd64`). Docker Desktop or WSL both work. Do not pull H3 checkpoints onto the workstation.
 
 ```bash
-docker build --platform linux/amd64 -t brakhet/podbooth-minimax-h3:i2v .
+docker build --platform linux/amd64 -t brakhet/podbooth-minimax-h3:v0.1.0-i2v-cu128 .
 ```
 
 Do not add `wget` lines for H3 checkpoints.
@@ -143,4 +141,4 @@ Commercial products must attribute “MiniMax H3”. Organizations above the lic
 - Comfy-Org — native nodes, [repackaged weights](https://huggingface.co/Comfy-Org/MiniMax-H3), [I2V template](https://github.com/Comfy-Org/workflow_templates/blob/main/templates/video_minimax_h3_i2v.json)
 - ComfyUI
 - Booth pattern: [bra-khet/podbooth-wan](https://github.com/bra-khet/podbooth-wan) ← [wlsdml1114/generate_video](https://github.com/wlsdml1114/generate_video)
-- Base image used for v1: `huchukato/comfyui-qwenvl-runpod:cu13-mmh3`
+- CUDA/torch base: `runpod/pytorch:1.2.0-cu1281-torch280-ubuntu2404`. H3 Comfy reference (not used as FROM): `huchukato/comfyui-qwenvl-runpod:cu13-mmh3`
