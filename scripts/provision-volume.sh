@@ -15,7 +15,7 @@ mkdir -p \
   "${ROOT}/inputs" \
   "${ROOT}/outputs"
 
-python3 -m pip install --no-cache-dir -U "huggingface_hub[hf_transfer]" hf_transfer >/dev/null
+python3 -m pip install --no-cache-dir -U --break-system-packages "huggingface_hub[hf_transfer]" hf_transfer >/dev/null
 export HF_HUB_ENABLE_HF_TRANSFER=1
 
 echo "Downloading Comfy-Org MiniMax-H3 I2V files into ${ROOT}/models ..."

@@ -1,10 +1,15 @@
 # Network volume layout — MiniMax H3
 
 Weights stay on the RunPod **network volume**, never in the Docker image.
-Serverless mounts the volume at `/runpod-volume`. A GPU pod using the same
-volume typically mounts it at `/workspace` — same files, different prefix.
+v1 is pinned to **AP-JP-1** (MiniMax H3 Community License). Do not use an
+EU / US / UK / KR volume. Serverless mounts at `/runpod-volume`. A GPU pod
+in the same DC can mount the same volume at `/workspace` or `/runpod-volume`.
 
-H3 and Wan 2.2 can share one volume. Keep the Wan booth's `/loras/` folder.
+This volume is **100 GB** and holds the INT8 I2V stack only. Do not download
+Ref2VA or BF16 DiT onto it.
+
+H3 LoRAs, if any, go in `/loras/` (same folder convention as the Wan booth,
+different volume).
 
 ## Folder tree
 
