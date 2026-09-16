@@ -2,7 +2,7 @@
 
 Worker input is the RunPod `{"input": {…}}` body. Output is `{"video": "<base64 mp4>"}` or `{"error": "…"}`.
 
-v1 implements **I2V / FL2VA** only. A reference pack or `mode: "r2v"` returns an error.
+This image implements **I2V / FL2VA** only. A reference pack or `mode: "r2v"` returns an error pointing at the sibling Ref2VA worker (`podbooth-minimax-h3-ref2va`). The split keeps each image lightweight.
 
 ## I2V / first–last
 
@@ -84,9 +84,9 @@ Failure:
 
 The handler reads Comfy history from `videos` **and** `gifs` (SaveVideo vs older VHS keys).
 
-## R2V (not v1)
+## R2V (sibling worker)
 
-Documented so the next sprint does not invent a new shape:
+Lives in `bra-khet/podbooth-minimax-h3-ref2va`, not this image. Shape kept here so clients do not invent a new one:
 
 ```json
 {
@@ -105,4 +105,4 @@ Documented so the next sprint does not invent a new shape:
 }
 ```
 
-Cap later: 9 images / 3 videos / 3 audio / 12 mixed. v1 returns an error instead of running FL2VA.
+Caps on the sibling: 9 images / 3 videos / 3 audio / 12 mixed. This I2V worker returns an error instead of running FL2VA.

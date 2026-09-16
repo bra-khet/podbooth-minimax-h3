@@ -2,8 +2,8 @@
 """Thin sidecar panel for the PodBooth MiniMax H3 worker.
 
 The daily-driver booth lives in the parent repo: `h3_fl2va_gui.py` via `.\run-fl2va.ps1`
-on port **7864**. This file stays as a worker-repo convenience and defaults to 7865
-so it cannot collide with the parent GUI.
+on port **7864**. This file stays as a worker-repo convenience and defaults to 7868
+so it cannot collide with the parent I2V GUI (7864) or the Ref2VA sibling booth (7865).
 """
 
 from __future__ import annotations
@@ -38,6 +38,16 @@ def _client() -> GenerateVideoClient:
     if not endpoint or not api_key:
         raise gr.Error("Set RUNPOD_ENDPOINT_ID and RUNPOD_API_KEY in the environment or .env")
     return GenerateVideoClient(endpoint, api_key)
+
+
+def _credential_status() -> str:
+    # CHANGED: Status only — never render the key or put it in a Gradio input.
+    # WHY: Share links serve component values to the browser. Env-only keeps the key on this machine.
+    endpoint = bool(os.getenv("RUNPOD_ENDPOINT_ID", "").strip())
+    key = bool(os.getenv("RUNPOD_API_KEY", "").strip())
+    endpoint_bit = "endpoint set" if endpoint else "**endpoint missing**"
+    key_bit = "API key loaded from env (not shown)" if key else "**API key missing**"
+    return f"Credentials: {endpoint_bit}; {key_bit}. Edit `.env`, then restart."
 
 
 def _parse_loras(lora_text: str) -> list[dict]:
@@ -124,6 +134,7 @@ def build_app() -> gr.Blocks:
             "Local control panel for the RunPod serverless worker. "
             "v1 is **I2V / first–last (FL2VA)** only. Ref2Vid is not wired yet."
         )
+        gr.Markdown(_credential_status())
         with gr.Tabs():
             with gr.Tab("I2V / First–Last"):
                 with gr.Row():
@@ -189,7 +200,7 @@ def build_app() -> gr.Blocks:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="PodBooth MiniMax H3 local UI")
     parser.add_argument("--server-name", default="0.0.0.0")
-    parser.add_argument("--server-port", type=int, default=7865)
+    parser.add_argument("--server-port", type=int, default=7868)
     parser.add_argument("--share", action="store_true")
     return parser.parse_args()
 

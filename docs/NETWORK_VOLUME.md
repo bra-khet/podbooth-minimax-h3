@@ -5,8 +5,9 @@ v1 is pinned to **AP-JP-1** (MiniMax H3 Community License). Do not use an
 EU / US / UK / KR volume. Serverless mounts at `/runpod-volume`. A GPU pod
 in the same DC can mount the same volume at `/workspace` or `/runpod-volume`.
 
-This volume is **100 GB** and holds the INT8 I2V stack only. Do not download
-Ref2VA or BF16 DiT onto it.
+This volume is **100 GB**. The I2V sibling holds the INT8 FL2VA stack (~41 GB).
+The Ref2VA sibling adds `minimax_h3_ref2va_pruned_int8_convrot.safetensors` (~21 GB)
+next to it. Do not download BF16. Do not replace the FL2VA file.
 
 H3 LoRAs, if any, go in `/loras/` (same folder convention as the Wan booth,
 different volume).
@@ -74,15 +75,15 @@ Official I2V template ships an 8-step turbo LoRA. v1 does **not** enable it unle
 
 Drop into `/runpod-volume/loras/` (Wan convention) or `/runpod-volume/models/loras/`.
 
-## Ref2VA (not v1)
+## Ref2VA (sibling worker)
 
-FL2VA and Ref2VA are **different checkpoints**. Do not point the I2V graph at a `ref2va_*` file.
+FL2VA and Ref2VA are **different checkpoints**. Do not point this I2V graph at a `ref2va_*` file.
 
-When R2V is added, also download:
+The sibling image `podbooth-minimax-h3-ref2va` downloads onto this same volume:
 
-- `minimax_h3_ref2va_pruned_int8_convrot.safetensors` (~19.5 GB)
+- `minimax_h3_ref2va_pruned_int8_convrot.safetensors` (21 GB INT8)
 
-That is a second ~20 GB on the same volume. Skip it until the R2V graph ships.
+Projected used with both DiTs: ~62 GB of 100 GB. Turbo LoRAs are optional and family-specific (I2V `fl2v` 8-step vs Ref2V `ref2v` 4-step). Do not mix them.
 
 ## 24 GB vs 48 GB
 

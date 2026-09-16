@@ -5,6 +5,8 @@
 
 You are building **PodBooth MiniMax H3**: a RunPod Serverless worker + Python client + local control UI for MiniMax Hailuo H3 video, cloned in *architecture* from `bra-khet/podbooth-wan` (Wan 2.2 I2V/FLF2V). Do not invent a new product shape. Mirror that repo’s split and rewrite only what H3 actually changes.
 
+**2026-09-16 sibling split:** Ref2VA is **not** a second graph in this repo. It is `bra-khet/podbooth-minimax-h3-ref2va` / `brakhet/podbooth-minimax-h3-ref2va`, same Japan volume, separate image so each worker stays lightweight. Ignore later sections of this INIT that still say “same worker” or “add h3_r2v_api.json here.”
+
 Read `https://github.com/bra-khet/podbooth-wan` in full before writing a single file: `README.md`, `Dockerfile`, `entrypoint.sh`, `handler.py`, `generate_video_client.py`, `extra_model_paths.yaml`, `.runpod/hub.json`, `new_Wan22_api.json`, `new_Wan22_flf2v_api.json`. Those files are the template. This prompt tells you what to keep, what to delete, and what H3-specific behavior to add.
 
 ---
@@ -18,7 +20,7 @@ H3 is **two diffusion checkpoints**, not one Wan-style dual-noise pair:
 | Mode | Checkpoint family | When to use |
 |---|---|---|
 | I2V / first+last frame | **FL2VA** (`MiniMaxH3ImageToVideo`) | Start image required. Optional end image. Closest analog to Wan I2V + FLF2V. **Build this first.** |
-| Reference-to-video | **Ref2VA** (`MiniMaxH3ReferenceToVideo`) | Pack of refs: up to 9 images, 3 videos, 3 audio. New clip, not “hold frame 1 exactly.” **Build this second, same worker if both weights live on the volume.** |
+| Reference-to-video | **Ref2VA** (`MiniMaxH3ReferenceToVideo`) | Pack of refs: up to 9 images, 3 videos, 3 audio / 12 mixed. **Direct sibling worker** `podbooth-minimax-h3-ref2va` (same volume, separate image) so each Docker image stays lightweight. |
 | T2V | FL2VA with no keyframes | Out of scope for v1. Do not spend time on it. A hidden path that reuses the I2V graph with no image attached is fine later; do not advertise it. |
 
 Official Comfy templates (pin and copy node graphs from these, do not freehand a graph):

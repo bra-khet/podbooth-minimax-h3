@@ -4,13 +4,13 @@ RunPod Serverless worker + Python client + local Gradio panel for **MiniMax Hail
 
 Architecture is a clone of [bra-khet/podbooth-wan](https://github.com/bra-khet/podbooth-wan) (Wan 2.2 I2V / FLF2V). The product shape is the same booth: submit a job with the right knobs, poll RunPod, get an mp4 back. H3 replaces Wan’s dual-noise pair with **FL2VA** (`MiniMaxH3ImageToVideo`).
 
-**v1 scope: I2V / first+last frame (FL2VA) only.** Ref2VA and T2V are out of scope. Do not advertise them.
+**This image is I2V / first+last frame (FL2VA) only.** Ref2VA is a **direct sibling** worker (`bra-khet/podbooth-minimax-h3-ref2va`) so each Docker image stays lightweight: one DiT, one graph, one endpoint. T2V is still out of scope.
 
 ```
 local machine
   parent h3_fl2va_gui.py (run-fl2va.ps1 :7864)
     ──►  RunPod /v2/{id}/run
-sidecar booth_ui.py is a convenience panel on :7865, not the daily driver.
+sidecar booth_ui.py is a convenience panel on :7868, not the daily driver.
 
 RunPod Serverless worker (GPU)
   entrypoint.sh  →  ComfyUI :8188  +  handler.py
@@ -55,7 +55,7 @@ v1 I2V stack (Comfy-Org pruned INT8 ConvRot) is **~40 GB** on the volume:
 | `minimax_h3_video_vae_fp16.safetensors` | `models/vae/` |
 | `minimax_h3_audio_vae_fp32.safetensors` | `models/vae/` |
 
-FL2VA and Ref2VA are **not interchangeable**. Do not point this graph at a `ref2va_*` file.
+FL2VA and Ref2VA are **not interchangeable**. Do not point this graph at a `ref2va_*` file. The sibling image loads `minimax_h3_ref2va_pruned_int8_convrot.safetensors` from the same volume.
 
 ## Network volume (Japan only)
 
@@ -80,11 +80,12 @@ Client wait default is 2700 s.
 ## Python client
 
 ```python
+import os
 from generate_video_client import GenerateVideoClient
 
 client = GenerateVideoClient(
-    runpod_endpoint_id="your-endpoint-id",
-    runpod_api_key="your-runpod-api-key",
+    runpod_endpoint_id=os.environ["RUNPOD_ENDPOINT_ID"],
+    runpod_api_key=os.environ["RUNPOD_API_KEY"],
 )
 
 result = client.create_video_i2v(
@@ -111,7 +112,7 @@ Full contract: [`docs/API.md`](docs/API.md). Prompt shape: [`docs/PROMPTING.md`]
 
 ## Local Gradio panel
 
-`booth_ui.py` is client-side. It does not run on the GPU worker.
+`booth_ui.py` is client-side. It does not run on the GPU worker. `RUNPOD_API_KEY` is read from `.env` only and is never a Gradio field.
 
 ```bash
 export RUNPOD_ENDPOINT_ID=...

@@ -61,6 +61,6 @@ Examples: `The camera pushes in with small amplitude at slow speed.` / `The came
 - Do not promise 4-step turbo quality as the default. Turbo is an optional volume LoRA you name in `loras`.
 - Do not put OC trigger words in this worker repo. Those belong in the parent GUI (`h3_fl2va_gui.py` / `run-fl2va.ps1`).
 
-## R2V (later)
+## R2V (sibling worker)
 
-Ref2VA wants labelled structure (`subject_definitions`, `summary`, `retention_analysis`, `detailed_description`, `overall_soundscape`) and `<Picture N>` / `<Video N>` / `<Audio N>` tags that match upload order. Vague “use these images” prompts waste Ref2VA. The v1 worker will not run that graph yet.
+Ref2VA wants labelled structure (`subject_definitions`, `summary`, `retention_analysis`, `detailed_description`, `overall_soundscape`) and `<Picture N>` / `<Video N>` / `<Audio N>` tags that match upload order. That graph lives in `podbooth-minimax-h3-ref2va`. This I2V worker will not run it.
